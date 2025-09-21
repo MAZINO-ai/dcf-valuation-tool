@@ -6,8 +6,16 @@ import dynamic from 'next/dynamic';
 // Dynamically import the Results component with SSR turned off
 const ResultsDisplay = dynamic(() => import('./Results'), { ssr: false });
 
+// Define a specific type for the InputField component's props
+interface InputFieldProps {
+  label: string;
+  value: number;
+  onChange: (value: string) => void;
+  placeholder: string;
+}
+
 // A reusable input component for styling
-const InputField = ({ label, value, onChange, placeholder }) => (
+const InputField = ({ label, value, onChange, placeholder }: InputFieldProps) => (
   <div>
     <label className="block text-sm font-medium text-gray-300">{label}</label>
     <input
@@ -42,15 +50,14 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleInputChange = (field, value) => {
-    setAssumptions((prev) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: string, value: string) => {
+    setAssumptions((prev) => ({ ...prev, [field]: Number(value) }));
   };
 
   const calculateValue = async () => {
     setIsLoading(true);
     setResult(null);
     try {
-      // --- THIS IS THE CORRECTED LINE ---
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -104,7 +111,6 @@ export default function Home() {
           </div>
         </div>
         
-        {/* Render the dynamically imported component */}
         <ResultsDisplay result={result} />
       </div>
     </main>
