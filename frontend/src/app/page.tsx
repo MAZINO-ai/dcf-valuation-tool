@@ -1,5 +1,12 @@
-// frontend/src/app/page.tsx
+Of course. Here is the entire corrected code for the `page.tsx` file.
 
+Simply replace everything in your `frontend/src/app/page.tsx` file with this, save it, and then run the git commands.
+
+-----
+
+## **Corrected `page.tsx` Code**
+
+```tsx
 'use client';
 
 import { useState } from 'react';
@@ -52,7 +59,8 @@ export default function Home() {
     setIsLoading(true);
     setResult(null);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, { ... });
+      // --- THIS IS THE CORRECTED LINE ---
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(assumptions),
