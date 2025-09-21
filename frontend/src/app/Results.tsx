@@ -1,9 +1,22 @@
-// frontend/src/app/Results.tsx
-
 'use client';
 
+// Define a specific type for our result object
+interface ResultData {
+  intrinsicValue: number;
+  sensitivityAnalysis: {
+    wacc_headers: string[];
+    growth_headers: string[];
+    table: number[][];
+  };
+}
+
+// Define the type for the component's props
+interface ResultsProps {
+  result: ResultData | null;
+}
+
 // This component will display the valuation results and sensitivity table.
-export default function Results({ result }: { result: any }) {
+export default function Results({ result }: ResultsProps) {
   if (!result) {
     return null;
   }
@@ -26,7 +39,7 @@ export default function Results({ result }: { result: any }) {
                 <tr>
                   <th className="p-2 border border-gray-600">WACC \ Growth</th>
                   {result.sensitivityAnalysis.growth_headers.map((header) => (
-                    <th key={header} className="p-2 bg-gray-700 border border-gray-600">{header}</th>
+                    <th key={header} className="p-2 bg-gray-700 border-gray-600">{header}</th>
                   ))}
                 </tr>
               </thead>
