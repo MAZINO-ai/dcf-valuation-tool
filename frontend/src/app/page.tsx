@@ -1,12 +1,3 @@
-Of course. Here is the entire corrected code for the `page.tsx` file.
-
-Simply replace everything in your `frontend/src/app/page.tsx` file with this, save it, and then run the git commands.
-
------
-
-## **Corrected `page.tsx` Code**
-
-```tsx
 'use client';
 
 import { useState } from 'react';
