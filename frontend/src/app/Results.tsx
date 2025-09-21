@@ -3,7 +3,7 @@
 'use client';
 
 // This component will display the valuation results and sensitivity table.
-export default function Results({ result }) {
+export default function Results({ result }: { result: any }) {
   if (!result) {
     return null;
   }
