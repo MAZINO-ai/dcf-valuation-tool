@@ -58,7 +58,7 @@ export default function Home() {
     setResult(null);
     setStatusMessage('Waking up the server...');
 
-    const retries = 4;
+    const retries = 5;
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, {
