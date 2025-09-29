@@ -3,10 +3,8 @@
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
 
-// Dynamically import the Results component with SSR turned off
 const ResultsDisplay = dynamic(() => import('./Results'), { ssr: false });
 
-// Define a specific type for the InputField component's props
 interface InputFieldProps {
   label: string;
   value: number;
@@ -14,7 +12,6 @@ interface InputFieldProps {
   placeholder: string;
 }
 
-// A reusable input component for styling
 const InputField = ({ label, value, onChange, placeholder }: InputFieldProps) => (
   <div>
     <label className="block text-sm font-medium text-gray-300">{label}</label>
@@ -28,9 +25,10 @@ const InputField = ({ label, value, onChange, placeholder }: InputFieldProps) =>
   </div>
 );
 
-// The main component for our page
+// --- New Helper Function for Delays ---
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 export default function Home() {
-  // State for all DCF inputs
   const [assumptions, setAssumptions] = useState({
     currentRevenue: 2000,
     growthRate: 15,
@@ -46,9 +44,10 @@ export default function Home() {
     debt: 300,
   });
 
-  // State to hold the results
   const [result, setResult] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [statusMessage, setStatusMessage] = useState('Calculate Intrinsic Value');
+
 
   const handleInputChange = (field: string, value: string) => {
     setAssumptions((prev) => ({ ...prev, [field]: Number(value) }));
@@ -57,26 +56,44 @@ export default function Home() {
   const calculateValue = async () => {
     setIsLoading(true);
     setResult(null);
-    try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(assumptions),
-      });
-      const data = await response.json();
-      setResult(data);
-    } catch (error) {
-      console.error('Failed to calculate DCF:', error);
-      alert('Failed to connect to the backend. Please ensure it is running.');
+    setStatusMessage('Waking up the server...');
+
+    const maxRetries = 3;
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/dcf`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(assumptions),
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Attempt ${attempt} failed`);
+        }
+        
+        const data = await response.json();
+        setResult(data);
+        setStatusMessage('Calculate Intrinsic Value');
+        setIsLoading(false);
+        return; // Success, exit the loop
+      } catch (error) {
+        console.error(`Attempt ${attempt} failed:`, error);
+        if (attempt < maxRetries) {
+          setStatusMessage(`Server is starting... Retrying (${attempt}/${maxRetries-1})`);
+          await sleep(5000); // Wait 5 seconds before retrying
+        } else {
+          setStatusMessage('Calculate Intrinsic Value');
+          alert('Failed to connect to the backend. The server might be busy. Please try again in a minute.');
+          setIsLoading(false);
+        }
+      }
     }
-    setIsLoading(false);
   };
 
   return (
     <main className="flex min-h-screen flex-col items-center p-8 bg-gray-900 text-white">
       <div className="w-full max-w-7xl">
         <h1 className="text-4xl font-bold text-center mb-8">Interactive DCF Valuation Tool</h1>
-
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Input Columns */}
           <div className="space-y-4 p-6 bg-gray-800 rounded-lg">
@@ -106,11 +123,10 @@ export default function Home() {
               disabled={isLoading}
               className="w-full mt-4 px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors"
             >
-              {isLoading ? 'Calculating...' : 'Calculate Intrinsic Value'}
+              {isLoading ? statusMessage : 'Calculate Intrinsic Value'}
             </button>
           </div>
         </div>
-        
         <ResultsDisplay result={result} />
       </div>
     </main>
